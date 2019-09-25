@@ -19,13 +19,19 @@ class TwitterBot {
             access_token: credentials.access_token,
             access_token_secret: credentials.access_token_secret
         });
+
+        this.event_cache = {};
     }
 
     async subscribe() {
         try {
             this.webhook.on('event', async event => {
                 if(event.tweet_create_events) {
-                    await this._onMention(event);
+                    if(!this.event_cache[event.tweet_create_events.id_str]) {
+                        this.event_cache[event.tweet_create_events.id_str] = event;
+                        await this._onMention(event);
+                        this.event_cache[event.tweet_create_events.id_str] = null;
+                    }
                 }
             });
 
@@ -43,6 +49,7 @@ class TwitterBot {
 
     async _onMention(event) {
         let tweet_data = event.tweet_create_events[0];
+
         if(!tweet_data) {
             return;
         }
@@ -50,7 +57,7 @@ class TwitterBot {
             return;
         }
 
-        let parent_id = tweet_data.id;
+        let parent_id = tweet_data.id_str;
         let parent_username = tweet_data.user.screen_name;
 
         let message = tweet_data.text
