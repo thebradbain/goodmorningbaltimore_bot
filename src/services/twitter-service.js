@@ -62,11 +62,15 @@ class TwitterBot {
         }
 
         // Workaround twitter link shortner/middleman
-        let redirect = await request({uri: twitter_url, resolveWithFullResponse: true});
-        let youtube_url = redirect.request.uri.href;
-        console.log(youtube_url);
+        try {
+            let redirect = await request({uri: twitter_url, resolveWithFullResponse: true});
+            let youtube_url = redirect.request.uri.href;
+            console.log(youtube_url);
 
-        await this._replyVideo(youtube_url, parent_id, parent_username);
+            await this._replyVideo(youtube_url, parent_id, parent_username);
+        } catch(e) {
+            console.log(e);
+        }
     }
 
     async _replyVideo(video_url, parent_id, parent_username) {
@@ -87,14 +91,12 @@ class TwitterBot {
                 const tweetParams = {
                     status: `Good morning, @${parent_username}!`,
                     in_reply_to_status_id: parent_id,
+                    auto_populate_reply_metadata: true,
                     media_ids: [mediaId]
                 }
 
                 console.log(`Sending tweet to @${parent_username}`);
-                this.client.post('statuses/update', tweetParams, (err, data, response) => {
-                    require("fs").unlinkSync(result);
-                    require("fs").unlinkSync(orig);
-                });
+                this.client.post('statuses/update', tweetParams);
             }, 20000);
         });
     }
