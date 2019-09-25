@@ -9,7 +9,7 @@ exports.downloadVideo = async function downloadVideo(video_url) {
     video_id = url.parse(video_url, true).query["v"];
     output_path = `./tmp/${video_id}.mp4`;
     const yt_command = `./bin/youtube-dl \\
-        -f bestvideo[ext=mp4] \\
+        -f worstvideo[ext=mp4] \\
         -o ${output_path} ${video_url}`;
 
     try {
@@ -27,8 +27,6 @@ exports.overlayVideoWithAudio = async function overlayVideoWithAudio(video_path,
     const ff_command = `${ffmpeg.path} \\
         -i ${video_path} -i ${audio_path} \\
         -c:v copy -map 0:v:0 -map 1:a:0 \\
-        -vcodec libx264 \\
-        -acodec aac \\
         -t 140 \\
         -shortest \\
         -y ${output_path}`;
